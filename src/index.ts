@@ -8,7 +8,15 @@ const validHostnames = [
 
 const fixHostname = "vxtwitter.com"
 
-const getHostname = (url: string) => new URL(url).hostname
+const getHostname = (url: string) => {
+    let hostname = "";
+    
+    try {
+        hostname = new URL(url).hostname
+    } catch (error) {}
+
+    return hostname
+}
 
 const client = new Client({
   intents: [
