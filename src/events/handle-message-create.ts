@@ -1,20 +1,32 @@
-import { Message } from "discord.js";
+import { Message, spoiler } from "discord.js";
 
 const fixHostname = "vxtwitter.com";
 
 const validHostnames = ["x.com", "twitter.com"];
 
 function extractTwitterLinks(messageContent: string) {
-  const links = messageContent.match(/\bhttps?:\/\/\S+/gi) ?? [];
+  const linkPattern = /\bhttps?:\/\/\S+|\|\|https?:\/\/\S+\|\|/gi;
+  const links = messageContent.match(linkPattern) ?? [];
 
   return links
     .filter((link) => {
-      const hostname = new URL(link).hostname;
-      return validHostnames.includes(hostname);
+      const cleanedLink =
+        link.startsWith("||") && link.endsWith("||") ? link.slice(2, -2) : link;
+      try {
+        const hostname = new URL(cleanedLink).hostname;
+        return validHostnames.includes(hostname);
+      } catch {
+        return false;
+      }
     })
     .map((link) => {
-      const hostname = new URL(link).hostname;
-      return link.replace(hostname, fixHostname);
+      const isSpoilered = link.startsWith("||") && link.endsWith("||");
+      const cleanedLink = isSpoilered ? link.slice(2, -2) : link;
+
+      const hostname = new URL(cleanedLink).hostname;
+      const fixedLink = cleanedLink.replace(hostname, fixHostname);
+
+      return isSpoilered ? `||${fixedLink}||` : fixedLink;
     });
 }
 
